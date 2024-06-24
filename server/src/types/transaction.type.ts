@@ -13,6 +13,7 @@ const transactionType = `#graphql
     type Query {
         transactions: [Transaction!]
         transaction(transactionId: ID!): Transaction
+        # TODO: Add categoryStatistics query
     }
 
     input CreateTransactionInput {
