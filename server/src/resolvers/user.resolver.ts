@@ -1,20 +1,104 @@
-import { Request, Response } from "express";
+import bcrypt from "bcryptjs";
 import { users } from "../dummyData/data";
+import User from "../models/user.model";
+import { LogInInputType, SignUpUserType } from "../types";
 
 const userResolver = {
   Query: {
-    users: (
-      parent: any,
-      args: any,
-      { req, res }: { req: Request; res: Response }
-    ) => {
-      return users;
+    user: async (_: any, { userId }: { userId: string }) => {
+      try {
+        const user = await User.findById(userId);
+        return user;
+      } catch (error) {
+        console.log("Error in user query:", error);
+        throw new Error("Error while getting user");
+      }
     },
-    user: (_: any, { userId }: { userId: string }) => {
-      return users.find((user) => user._id === userId);
+    authUser: async (_: any, __: any, context: any) => {
+      try {
+        const user = await context.getUser();
+        return user;
+      } catch (error) {
+        console.log("Error in authUser:", error);
+        throw new Error("Internal server error");
+      }
+    },
+    // TODO: Add user/transaction relation
+  },
+  Mutation: {
+    signUp: async (
+      _: any,
+      { input }: { input: SignUpUserType },
+      context: any
+    ) => {
+      try {
+        const { username, name, password, gender } = input;
+        if (!username || !name || !password || !gender) {
+          throw new Error("Please provide all fields");
+        }
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+          throw new Error("User already exists");
+        }
+
+        const salt = bcrypt.getSalt("10");
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const maleProfilePicture = `https://avatar.iran.liara.run/public/boy?username=${username}`;
+        const femaleProfilePicture = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+
+        const newUser = new User({
+          username,
+          name,
+          password: hashedPassword,
+          gender,
+          profilePicture:
+            gender === "male" ? maleProfilePicture : femaleProfilePicture,
+        });
+
+        await newUser.save();
+        await context.login(newUser);
+        return newUser;
+      } catch (error) {
+        console.log("Error in signUp:", error);
+        throw new Error("Internal server error");
+      }
+    },
+    logIn: async (
+      _: any,
+      { input }: { input: LogInInputType },
+      context: any
+    ) => {
+      try {
+        const { username, password } = input;
+        const { user } = await context.authenticate("graphql-local", {
+          username,
+          password,
+        });
+
+        await context.login(user);
+        return user;
+      } catch (error) {
+        console.log("Error in logIn:", error);
+        throw new Error("Internal server error");
+      }
+    },
+    logOut: async (_: any, __: any, context: any) => {
+      try {
+        await context.logout();
+        context.req.session.destroy((err: Error) => {
+          if (err) throw new Error("Error while loggin out");
+        });
+        context.res.clearCookie("connect.sid");
+
+        return { message: "Logged out successfully" };
+      } catch (error) {
+        console.log("Error while loggin out:", error);
+        throw new Error("Internal server error");
+      }
     },
   },
-  Mutation: {},
 };
 
 export default userResolver;
