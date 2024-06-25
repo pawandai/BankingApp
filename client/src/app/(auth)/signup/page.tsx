@@ -32,12 +32,12 @@ const formSchema = z.object({
 });
 
 const SignUpPage = () => {
-  const [signUpData, setSignUpData] = useState({
+  const signUpData = {
     name: "",
     username: "",
     password: "",
     gender: undefined,
-  });
+  };
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
