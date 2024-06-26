@@ -6,6 +6,8 @@ import { useState } from "react";
 import Image from "next/image";
 import TransactionForm from "@/components/shared/TransactionForm";
 import Cards from "@/components/shared/Cards";
+import { useQuery } from "@apollo/client";
+import { GET_AUTHENTICATED_USER } from "@/graphql/queries/user.query";
 
 // const chartData = {
 // 	labels: ["Saving", "Expense", "Investment"],
@@ -27,7 +29,14 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const HomePage = () => {
   // const { data } = useQuery(GET_TRANSACTION_STATISTICS);
-  // const { data: authUserData } = useQuery(GET_AUTHENTICATED_USER);
+  const {
+    loading,
+    data: authUserData,
+    error,
+  } = useQuery(GET_AUTHENTICATED_USER);
+  console.log("Authenticated User: ", authUserData);
+  console.log("Error: ", error);
+  console.log("Loading: ", loading);
 
   // const [logout, { loading, client }] = useMutation(LOGOUT, {
   // 	refetchQueries: ["GetAuthenticatedUser"],
