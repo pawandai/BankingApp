@@ -42,7 +42,7 @@ const userResolver = {
           throw new Error("User already exists");
         }
 
-        const salt = bcrypt.getSalt("10");
+        const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const maleProfilePicture = `https://avatar.iran.liara.run/public/boy?username=${username}`;
@@ -72,6 +72,7 @@ const userResolver = {
     ) => {
       try {
         const { username, password } = input;
+        if (!username || !password) throw new Error("All fields are required");
         const { user } = await context.authenticate("graphql-local", {
           username,
           password,
@@ -79,8 +80,8 @@ const userResolver = {
 
         await context.login(user);
         return user;
-      } catch (error) {
-        console.log("Error in logIn:", error);
+      } catch (err) {
+        console.error("Error in login:", err);
         throw new Error("Internal server error");
       }
     },

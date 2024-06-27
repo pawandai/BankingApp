@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import toast from "react-hot-toast";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,6 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Link from "next/link";
+import { useMutation } from "@apollo/client";
+import { SIGN_UP } from "@/graphql/mutations/user.mutation";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -32,12 +34,18 @@ const formSchema = z.object({
 });
 
 const SignUpPage = () => {
+  const router = useRouter();
+
   const signUpData = {
     name: "",
     username: "",
     password: "",
     gender: undefined,
   };
+
+  const [signUp, { loading }] = useMutation(SIGN_UP, {
+    refetchQueries: ["GetAuthenticatedUser"],
+  });
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,8 +54,14 @@ const SignUpPage = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await signUp({ variables: { input: values } });
+      router.push("/");
+    } catch (error) {
+      console.log("Something Went Wrong: ", error);
+      toast.error("Something went wrong:( Please try again.");
+    }
   }
 
   // signup mutation will be added later
@@ -144,8 +158,8 @@ const SignUpPage = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Signing Up..." : "Sign Up"}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Signing Up..." : "Sign Up"}
           </Button>
           <Link href="/login">
             Already have an account?{" "}

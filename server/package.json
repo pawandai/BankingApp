@@ -6,7 +6,7 @@
   "author": "pawandai",
   "license": "ISC",
   "scripts": {
-    "start": "node ./server/dist/server",
+    "start": "node ./dist/server",
     "build": "tsc -p .",
     "dev": "tsc-watch --onSuccess \"npm start\""
   },

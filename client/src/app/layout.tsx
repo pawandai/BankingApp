@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { Urbanist } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 const urbanist = Urbanist({
   subsets: ["latin"],
@@ -13,12 +13,6 @@ export const metadata: Metadata = {
   description: "Created by pawandai",
 };
 
-const client = new ApolloClient({
-  uri: process.env.API_URL,
-  cache: new InMemoryCache(), // cache is used to store the data that is fetched from the server.
-  credentials: "include", // send cookies with every request.
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +21,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${urbanist.className} font-medium`}>
-        <ApolloProvider client={client}>{children}</ApolloProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

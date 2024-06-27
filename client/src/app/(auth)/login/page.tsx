@@ -15,6 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useMutation } from "@apollo/client";
+import { LOGIN } from "@/graphql/mutations/user.mutation";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -26,6 +30,11 @@ const formSchema = z.object({
 });
 
 const LogInPage = () => {
+  const router = useRouter();
+  const [logIn, { loading }] = useMutation(LOGIN, {
+    refetchQueries: ["GetAuthenticatedUser"],
+  });
+
   const [signUpData, setSignUpData] = useState({
     username: "",
     password: "",
@@ -38,15 +47,20 @@ const LogInPage = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await logIn({ variables: { input: values } });
+      toast.success("Logged in successfully");
+      router.push("/");
+    } catch (error) {
+      console.log("Error while loggin in: ", error);
+      toast.error("Could not log in. Please try again.");
+    }
   }
 
   return (
     <div className="h-screen flex flex-col justify-center max-w-[360px] mx-auto">
-      <h1 className="text-3xl font-semibold mb-4 text-center">
-        Register with Us
-      </h1>
+      <h1 className="text-3xl font-semibold mb-4 text-center">Welcome Back!</h1>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

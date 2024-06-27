@@ -20,7 +20,7 @@ export async function GraphQL() {
   const httpServer = http.createServer(app);
   app.use(
     cors({
-      origin: "http://localhost:5000",
+      origin: "http://localhost:3000",
       credentials: true,
     })
   );
