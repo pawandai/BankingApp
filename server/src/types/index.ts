@@ -31,7 +31,7 @@ export type CreateTransactionInputType = {
   description: string;
   paymentType: string;
   category: string;
-  amount: number;
+  amount: string;
   location: string;
   date: string;
 };
@@ -45,7 +45,5 @@ export type UpdateTransactionInputType = {
   location?: string;
   date?: string;
 };
-
-export type ContextType = { req: Request; res: Response };
 
 export default mergedTypes;

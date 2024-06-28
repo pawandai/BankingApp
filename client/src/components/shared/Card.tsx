@@ -20,7 +20,7 @@ type CardProps = {
   transaction: {
     _id: string;
     category: string;
-    amount: number;
+    amount: string;
     location: string;
     date: string;
     paymentType: string;

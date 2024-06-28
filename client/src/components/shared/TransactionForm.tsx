@@ -24,6 +24,9 @@ import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
+import { useMutation } from "@apollo/client";
+import { CREATE_TRANSACTION } from "@/graphql/mutations/transaction.mutation";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
   description: z.string({ required_error: "Description is required." }),
@@ -35,6 +38,8 @@ const formSchema = z.object({
 });
 
 const TransactionForm = () => {
+  const [createTransaction, { loading }] = useMutation(CREATE_TRANSACTION);
+
   const transactionData = {
     description: undefined,
     paymentType: undefined,
@@ -49,8 +54,17 @@ const TransactionForm = () => {
     defaultValues: transactionData,
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await createTransaction({
+        variables: { input: values },
+      });
+      form.reset();
+      toast.success("Transaction created successfully");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to create transaction");
+    }
   }
   // TODO => WHEN RELATIONSHIPS ARE ADDED, CHANGE THE REFETCH QUERY A BIT
   // const [createTransaction, { loading }] = useMutation(CREATE_TRANSACTION, {
@@ -250,8 +264,8 @@ const TransactionForm = () => {
           </div>
         </div>
         {/* SUBMIT BUTTON */}
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Loading..." : "Add Transaction"}
+        <Button type="submit" disabled={loading}>
+          {loading ? "Loading..." : "Add Transaction"}
         </Button>
       </form>
     </Form>

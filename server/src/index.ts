@@ -12,6 +12,7 @@ import passport from "passport";
 import session from "express-session";
 import connectMongo from "connect-mongodb-session";
 import { buildContext } from "graphql-passport";
+import { configurePassport } from "./config/passport.config";
 
 export async function GraphQL() {
   const MONGODB_URI = process.env.MONGODB_URI || "";
@@ -49,6 +50,8 @@ export async function GraphQL() {
       store: store,
     })
   );
+
+  configurePassport();
 
   app.use(passport.initialize());
   app.use(passport.session());
