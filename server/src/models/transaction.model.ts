@@ -12,7 +12,7 @@ const transactionSchema = new Schema({
   },
   paymentType: {
     type: String,
-    enum: ["cash", "card"],
+    enum: ["cash", "card", "other"],
     required: true,
   },
   category: {

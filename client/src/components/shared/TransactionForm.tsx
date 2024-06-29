@@ -38,7 +38,9 @@ const formSchema = z.object({
 });
 
 const TransactionForm = () => {
-  const [createTransaction, { loading }] = useMutation(CREATE_TRANSACTION);
+  const [createTransaction, { loading }] = useMutation(CREATE_TRANSACTION, {
+    refetchQueries: ["GetTransactions"],
+  });
 
   const transactionData = {
     description: undefined,
@@ -66,34 +68,6 @@ const TransactionForm = () => {
       toast.error("Failed to create transaction");
     }
   }
-  // TODO => WHEN RELATIONSHIPS ARE ADDED, CHANGE THE REFETCH QUERY A BIT
-  // const [createTransaction, { loading }] = useMutation(CREATE_TRANSACTION, {
-  // 	refetchQueries: ["GetTransactions", "GetTransactionStatistics"],
-  // });
-
-  // const handleSubmit = async (e) => {
-  // 	e.preventDefault();
-
-  // 	const form = e.target;
-  // 	const formData = new FormData(form);
-  // 	const transactionData = {
-  // 		description: formData.get("description"),
-  // 		paymentType: formData.get("paymentType"),
-  // 		category: formData.get("category"),
-  // 		amount: parseFloat(formData.get("amount")),
-  // 		location: formData.get("location"),
-  // 		date: formData.get("date"),
-  // 	};
-
-  // 	try {
-  // 		await createTransaction({ variables: { input: transactionData } });
-
-  // 		form.reset();
-  // 		toast.success("Transaction created successfully");
-  // 	} catch (error) {
-  // 		toast.error(error.message);
-  // 	}
-  // };
 
   return (
     <Form {...form}>

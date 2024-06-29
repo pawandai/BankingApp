@@ -8,12 +8,13 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { useMutation } from "@apollo/client";
+import { DELETE_TRANSACTION } from "@/graphql/mutations/transaction.mutation";
 
 const categoryColorMap: { [key: string]: string } = {
   saving: "from-green-700 to-green-400",
   expense: "from-pink-800 to-pink-600",
   investment: "from-blue-700 to-blue-400",
-  // Add more categories and corresponding color classes as needed
 };
 
 type CardProps = {
@@ -32,9 +33,9 @@ const Card = ({ transaction }: CardProps) => {
   let { category, amount, location, date, paymentType, description } =
     transaction;
   const cardClass = categoryColorMap[category];
-  //   const [deleteTransaction, { loading }] = useMutation(DELETE_TRANSACTION, {
-  //     refetchQueries: ["GetTransactions", "GetTransactionStatistics"],
-  //   });
+  const [deleteTransaction, { loading }] = useMutation(DELETE_TRANSACTION, {
+    refetchQueries: ["GetTransactions"],
+  });
 
   // Capitalize the first letter of the description
   description = description[0]?.toUpperCase() + description.slice(1);
@@ -45,9 +46,9 @@ const Card = ({ transaction }: CardProps) => {
 
   const handleDelete = async () => {
     try {
-      //   await deleteTransaction({
-      //     variables: { transactionId: transaction._id },
-      //   });
+      await deleteTransaction({
+        variables: { transactionId: transaction._id },
+      });
       toast.success("Transaction deleted successfully");
     } catch (error) {
       console.error("Error deleting transaction:", error);
@@ -61,12 +62,12 @@ const Card = ({ transaction }: CardProps) => {
         <div className="flex flex-row items-center justify-between">
           <h2 className="text-lg font-bold text-white">{category}</h2>
           <div className="flex items-center gap-2">
-            {/* {!loading && (
+            {!loading && (
               <FaTrash className={"cursor-pointer"} onClick={handleDelete} />
             )}
             {loading && (
               <div className="w-6 h-6 border-t-2 border-b-2  rounded-full animate-spin"></div>
-            )} */}
+            )}
             <Link href={`/transaction/${transaction._id}`}>
               <HiPencilAlt className="cursor-pointer" size={20} />
             </Link>
@@ -82,7 +83,7 @@ const Card = ({ transaction }: CardProps) => {
         </p>
         <p className="text-white flex items-center gap-1">
           <FaSackDollar />
-          Amount: ${amount}
+          Amount: £ {amount}
         </p>
         <p className="text-white flex items-center gap-1">
           <FaLocationDot />
@@ -92,7 +93,9 @@ const Card = ({ transaction }: CardProps) => {
           <p className="text-xs text-black font-bold">{formattedDate}</p>
           <Image
             src={"/404.svg"}
-            className="h-8 w-8 border rounded-full"
+            width={32}
+            height={32}
+            className="border rounded-full"
             alt="Profile"
           />
         </div>

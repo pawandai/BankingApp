@@ -30,11 +30,14 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import { useMutation, useQuery } from "@apollo/client";
+import { GET_TRANSACTION } from "@/graphql/queries/transaction.query";
+import { UPDATE_TRANSACTION } from "@/graphql/mutations/transaction.mutation";
 
 const formSchema = z.object({
   description: z.string().min(1, {
@@ -53,28 +56,38 @@ const formSchema = z.object({
 
 const TransactionPage = () => {
   const { id } = useParams();
-  // const { loading, data } = useQuery(GET_TRANSACTION, {
-  //   variables: { id: id },
-  // });
-
-  // console.log("Transaction", data);
-
-  // const [updateTransaction, { loading: loadingUpdate }] = useMutation(
-  //   UPDATE_TRANSACTION,
-  //   {
-  //     // https://github.com/apollographql/apollo-client/issues/5419 => refetchQueries is not working, and here is how we fixed it
-  //     refetchQueries: [{ query: GET_TRANSACTION_STATISTICS }],
-  //   }
-  // );
-
-  const [formData, setFormData] = useState({
-    description: "",
-    paymentType: "",
-    category: "",
-    amount: "",
-    location: "",
-    date: undefined,
+  const router = useRouter();
+  const { loading, data } = useQuery(GET_TRANSACTION, {
+    variables: { transactionId: id },
   });
+
+  const [updateTransaction, { loading: updateLoading }] = useMutation(
+    UPDATE_TRANSACTION,
+    {
+      // refetchQueries: [{ query: GET_TRANSACTION_STATISTICS }],
+    }
+  );
+
+  const [formData, setFormData] = useState<z.infer<typeof formSchema>>({
+    description: data?.transaction?.description || "",
+    paymentType: data?.transaction?.paymentType || "",
+    category: data?.transaction?.category || "",
+    amount: data?.transaction?.amount || "",
+    location: data?.transaction?.location || "",
+    date: data?.transaction?.date || new Date(),
+  });
+
+  useEffect(() => {
+    if (data)
+      setFormData({
+        description: data?.transaction?.description,
+        paymentType: data?.transaction?.paymentType,
+        category: data?.transaction?.category,
+        amount: data?.transaction?.amount,
+        location: data?.transaction?.location,
+        date: data?.transaction?.date,
+      });
+  }, [data]);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -83,22 +96,22 @@ const TransactionPage = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await updateTransaction({
+        variables: {
+          input: { transactionId: data?.transaction?._id, ...values },
+        },
+      });
+      toast.success("Transaction updated successfully");
+      router.push("/");
+    } catch (error) {
+      console.log("Update transaction error: ", error);
+      toast.error("Could not update the transaction");
+    }
   }
 
-  // event type any for now
-  // const handleSubmit = async (e: any) => {
-  //   e.preventDefault();
-  //   const amount = parseFloat(formData.amount);
-  //   try {
-  //     toast.success("Transaction updated successfully");
-  //   } catch (error) {
-  //     toast.error("Something went wrong!");
-  //   }
-  // };
-
-  // if (loading) return <TransactionFormSkeleton />;
+  if (loading) return <TransactionFormSkeleton />;
 
   return (
     <div className="h-screen max-w-4xl mx-auto flex flex-col items-center justify-center">
@@ -138,7 +151,7 @@ const TransactionPage = () => {
                     <FormLabel>Payment Type</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      defaultValue={formData.paymentType}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -167,7 +180,7 @@ const TransactionPage = () => {
                     <FormLabel>Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      defaultValue={formData.category}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -252,7 +265,6 @@ const TransactionPage = () => {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) =>
                             date > new Date() || date < new Date("1900-01-01")
@@ -269,12 +281,8 @@ const TransactionPage = () => {
             </div>
           </div>
           {/* SUBMIT BUTTON */}
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? "Updating..." : "Update Transaction"}
+          <Button className="w-full" type="submit" disabled={updateLoading}>
+            {updateLoading ? "Updating..." : "Update Transaction"}
           </Button>
         </form>
       </Form>
