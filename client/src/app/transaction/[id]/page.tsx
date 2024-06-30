@@ -36,7 +36,10 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { useMutation, useQuery } from "@apollo/client";
-import { GET_TRANSACTION } from "@/graphql/queries/transaction.query";
+import {
+  GET_TRANSACTION,
+  GET_TRANSACTION_STATISTICS,
+} from "@/graphql/queries/transaction.query";
 import { UPDATE_TRANSACTION } from "@/graphql/mutations/transaction.mutation";
 
 const formSchema = z.object({
@@ -64,7 +67,7 @@ const TransactionPage = () => {
   const [updateTransaction, { loading: updateLoading }] = useMutation(
     UPDATE_TRANSACTION,
     {
-      // refetchQueries: [{ query: GET_TRANSACTION_STATISTICS }],
+      refetchQueries: [{ query: GET_TRANSACTION_STATISTICS }],
     }
   );
 
