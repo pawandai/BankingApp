@@ -10,10 +10,15 @@ const transactionType = `#graphql
         date: String!
     }
 
+    type CategoryStatistics {
+        category: String!
+        totalAmount: Float!
+    }
+
     type Query {
         transactions: [Transaction!]
         transaction(transactionId: ID!): Transaction
-        # TODO: Add categoryStatistics query
+        categoryStatistics: [CategoryStatistics!]
     }
 
     input CreateTransactionInput {
