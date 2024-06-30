@@ -3,18 +3,20 @@ import { useQuery } from "@apollo/client";
 import TransactionFormSkeleton from "./FormSkeleton";
 import Card from "./Card";
 import { TransactionType } from "@/types";
+import {
+  GET_AUTHENTICATED_USER,
+  GET_USER_TRANSACTIONS,
+} from "@/graphql/queries/user.query";
 
 const Cards = () => {
   const { data, loading } = useQuery(GET_TRANSACTIONS);
   //   const { data: authUser } = useQuery(GET_AUTHENTICATED_USER);
+  const { data: authUser } = useQuery(GET_AUTHENTICATED_USER);
+  const { data: userTransactions } = useQuery(GET_USER_TRANSACTIONS, {
+    variables: { userId: authUser?.authUser?._id },
+  });
 
-  //   const { data: userAndTransactions } = useQuery(GET_USER_AND_TRANSACTIONS, {
-  //     variables: {
-  //       userId: authUser?.authUser?._id,
-  //     },
-  //   });
-
-  //   console.log("userAndTransactions:", userAndTransactions);
+  console.log("user transactions: ", userTransactions);
 
   console.log("cards:", data);
 

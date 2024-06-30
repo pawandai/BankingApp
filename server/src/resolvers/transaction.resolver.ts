@@ -98,7 +98,18 @@ const transactionResolver = {
       }
     },
   },
-  // TODO: Add user/transaction relation
+  // user/transaction relation
+  User: {
+    transactions: async (parent: any) => {
+      try {
+        const transactions = await Transaction.find({ userId: parent._id });
+        return transactions;
+      } catch (error) {
+        console.error("Error getting user transactions: ", error);
+        throw new Error("Error getting user transactions");
+      }
+    },
+  },
 };
 
 export default transactionResolver;
